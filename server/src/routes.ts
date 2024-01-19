@@ -35,4 +35,48 @@ export async function appRoutes(app: FastifyInstance) {
       }
     })
   });
+
+  app.get('/day', async (request) => {
+    const getDayParams = z.object({
+      date: z.coerce.date() // converte o parâmetro(String) recebido pelo front em (Date)
+    })
+
+    const { date } = getDayParams.parse(request.query)
+
+    const parseDate = dayjs(date).startOf('day')
+    const weekDay = parseDate.get('day')
+
+    const possibleHabits = await prisma.habit.findMany({
+      where: {
+        created_at: {
+          lte: date,
+        },
+        weekDays: {
+          some: {
+            week_day: weekDay,
+          }
+        }
+      }
+    })
+
+    // completed habits
+
+    const day = await prisma.day.findUnique({
+      where: {
+        date: parseDate.toDate(),
+      },
+      include: {
+        dayHabits: true,
+      }
+    })
+
+    const completedHabits = day?.dayHabits.map(dayHabit => {
+      return dayHabit.habit_id
+    });
+
+    return {
+      possibleHabits,
+      completedHabits,
+    }
+  });
 }
