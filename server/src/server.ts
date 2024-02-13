@@ -2,13 +2,15 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { appRoutes } from "./routes";
 
+const PORT = 3333
+
 const app = Fastify();
 
 app.register(cors);
 app.register(appRoutes);
 
 app.listen({
-  port: 3333,
+  port: PORT,
 }).then(() => {
-  console.log("HTTP server running!");
+  console.log(`HTTP server running! http://localhost:${PORT}`);
 });
